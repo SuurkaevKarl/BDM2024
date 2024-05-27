@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  jedi-master:
+    image: custom-pyspark-notebook
+    container_name: jedi-master
+    command: 
+      start-spark.sh
+      jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --allow-root
+    ports:
+      - "8888:8888"
+      - "8080:8080"
+      - "7077:7077"
+    environment:
+      - SPARK_MODE=master
+      - SPARK_MASTER_HOST=jedi-master
+      - SPARK_DRIVER_MEMORY=3g
+    volumes:
+      - ./mnt:/home/jovyan/
+
+  pada-1:
+    image: custom-pyspark-notebook
+    container_name: pada-1
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER=spark://jedi-master:7077
+      - SPARK_WORKER_MEMORY=6g
+      #- SPARK_WORKER_CORES=20
+      - SPARK_WORKER_MEMORY_FRACTION=0.9
+
+  pada-2:
+    image: custom-pyspark-notebook
+    container_name: pada-2
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER=spark://jedi-master:7077
+      - SPARK_WORKER_MEMORY=6g
+      #- SPARK_WORKER_CORES=20
+      - SPARK_WORKER_MEMORY_FRACTION=0.9
+
+networks:
+  default:
+    driver: bridge
